@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <script src='https://statics.teams.microsoft.com/sdk/v1.2/js/MicrosoftTeams.min.js'></script>
+    </head>
+    <body>
+        <script>
+            microsoftTeams.initialize();
+
+            //notifySuccess() closes the popup window and passes the specified information to the configuration page
+            //Usually you would pass the tokens in here, but as we don't want to expose user tokens to the client and we only need a proof that the user is who we claims (authentication), we leave these fields empty
+            microsoftTeams.authentication.notifySuccess({
+            idToken: "N/A",
+            accessToken: "N/A",
+            tokenType: "N/A",
+            expiresIn: "N/A"
+        })    
+        </script>
+    </body>
+</html>

@@ -10,36 +10,69 @@
 </head>
 
 <body>
-    
-    Copy your webhook URL from here to POST messages in this channel: <span id="url"></span><br><br>
-    Don't forget to click on "Save" to activate your connector.
+
+    <!-- You should NEVER trigger a login without any user interaction. It is likely that the spawning popup will be blocked or act weird! -->
+    <button id="login" onclick="login()">Authenticate before configuring the connector!</button>
+
+    <!-- When the login is completed successfully, show the connector URL and enable finishing configuration -->
+    <div id="success" style="display: none;">
+        Copy your webhook URL from here to POST messages in this channel: <span id="url"></span><br><br>
+        Don't forget to click on "Save" to activate your connector.
+    </div>
+
     <script>
         //You always have to initialize the teams SDK first before being able to call any other method
         microsoftTeams.initialize();
-        //Store some settings in the configuration of the connector
-        microsoftTeams.settings.setSettings({
-            //Important when referencing your connector from somewhere else within Teams
-            entityId: "sampleConn",
-            //This name will be shown to channel admins under "configured connectors" - Use something that helps admins to identify this specific connection
-            configName: "sampleConfig",
-            //The URL to the configuration page for further config changes
-            contentUrl: "https://e6d84899.ngrok.io"
-        });
 
-        //By calling getSettings() you get (among other information) the webhook URL that you will use to POST messages into the channel
-        microsoftTeams.settings.getSettings(s => {
-            document.getElementById("url").innerText = s.webhookUrl;
-            console.log(s);
-        });
 
-        //This command enables the "Save" button (disabled by default)
-        microsoftTeams.settings.setValidityState(true);
+        //Login function to authenticate the user before configuring the connector
+        function login() {
+            microsoftTeams.authentication.authenticate({
+                //The user must always be redirect to a page on your domain. You cannot redirect directly to the login page of your choice
+                url: window.location.origin + "/login",
+                //Specify the width and height of the spawning popup
+                width: 600,
+                height: 535,
+                //Specify callbacks when the authentication succeeds or fails
+                successCallback: function (result) {
+                    console.log(result);
+                    configure();
+                },
+                failureCallback: function (reason) {
+                    console.error(reason);
+                }
+            });
+        }
 
-        //Specify what happens when the user clicks on "Save"
-        microsoftTeams.settings.registerOnSaveHandler((saveEvent) => {
-            //You have to notify Teams that the saving process was successful, otherwise the save operation will time out and display an error
-            saveEvent.notifySuccess();
-        });
+        //Function to configure the actual connector
+        function configure() {
+            document.getElementById("login").style.display = "none";
+            document.getElementById("success").style.display = "block";
+            //Store some settings in the configuration of the connector
+            microsoftTeams.settings.setSettings({
+                //Important when referencing your connector from somewhere else within Teams
+                entityId: "sampleConn",
+                //This name will be shown to channel admins under "configured connectors" - Use something that helps admins to identify this specific connection
+                configName: "sampleConfig",
+                //The URL to the configuration page for further config changes
+                contentUrl: "https://e6d84899.ngrok.io"
+            });
+
+            //By calling getSettings() you get (among other information) the webhook URL that you will use to POST messages into the channel
+            microsoftTeams.settings.getSettings(s => {
+                document.getElementById("url").innerText = s.webhookUrl;
+                console.log(s);
+            });
+
+            //This command enables the "Save" button (disabled by default)
+            microsoftTeams.settings.setValidityState(true);
+
+            //Specify what happens when the user clicks on "Save"
+            microsoftTeams.settings.registerOnSaveHandler((saveEvent) => {
+                //You have to notify Teams that the saving process was successful, otherwise the save operation will time out and display an error
+                saveEvent.notifySuccess();
+            });
+        }
     </script>
 </body>
 
