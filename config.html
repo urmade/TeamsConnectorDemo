@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Page Title</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <script src='https://statics.teams.microsoft.com/sdk/v1.2/js/MicrosoftTeams.min.js'></script>
+</head>
+
+<body>
+    
+    Copy your webhook URL from here to POST messages in this channel: <span id="url"></span><br><br>
+    Don't forget to click on "Save" to activate your connector.
+    <script>
+        microsoftTeams.initialize();
+        microsoftTeams.settings.setSettings({
+            entityId: "sampleConn",
+            configName: "sampleConfig",
+            contentUrl: "https://e6d84899.ngrok.io"
+        });
+        microsoftTeams.settings.getSettings(s => {
+            document.getElementById("url").innerText = s.webhookUrl;
+            console.log(s);
+        });
+        microsoftTeams.settings.setValidityState(true);
+        microsoftTeams.settings.registerOnSaveHandler((saveEvent) => {
+            saveEvent.notifySuccess();
+        });
+        
+        
+        
+    </script>
+</body>
+
+</html>
