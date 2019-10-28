@@ -1,10 +1,10 @@
+//Create a basic Node.js server
 const express = require("express");
-
 const app = express();
 
-const request = require("request");
 
 app.get("/", (req,res) => {
+    //Send out the configuration page of the connector
     res.sendFile(__dirname + "/config.html");
 })
 
