@@ -14,23 +14,32 @@
     Copy your webhook URL from here to POST messages in this channel: <span id="url"></span><br><br>
     Don't forget to click on "Save" to activate your connector.
     <script>
+        //You always have to initialize the teams SDK first before being able to call any other method
         microsoftTeams.initialize();
+        //Store some settings in the configuration of the connector
         microsoftTeams.settings.setSettings({
+            //Important when referencing your connector from somewhere else within Teams
             entityId: "sampleConn",
+            //This name will be shown to channel admins under "configured connectors" - Use something that helps admins to identify this specific connection
             configName: "sampleConfig",
+            //The URL to the configuration page for further config changes
             contentUrl: "https://e6d84899.ngrok.io"
         });
+
+        //By calling getSettings() you get (among other information) the webhook URL that you will use to POST messages into the channel
         microsoftTeams.settings.getSettings(s => {
             document.getElementById("url").innerText = s.webhookUrl;
             console.log(s);
         });
+
+        //This command enables the "Save" button (disabled by default)
         microsoftTeams.settings.setValidityState(true);
+
+        //Specify what happens when the user clicks on "Save"
         microsoftTeams.settings.registerOnSaveHandler((saveEvent) => {
+            //You have to notify Teams that the saving process was successful, otherwise the save operation will time out and display an error
             saveEvent.notifySuccess();
         });
-        
-        
-        
     </script>
 </body>
 
