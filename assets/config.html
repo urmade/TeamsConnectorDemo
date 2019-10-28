@@ -14,10 +14,9 @@
     <!-- You should NEVER trigger a login without any user interaction. It is likely that the spawning popup will be blocked or act weird! -->
     <button id="login" onclick="login()">Authenticate before configuring the connector!</button>
 
-    <!-- When the login is completed successfully, show the connector URL and enable finishing configuration -->
-    <div id="success" style="display: none;">
-        Copy your webhook URL from here to POST messages in this channel: <span id="url"></span><br><br>
-        Don't forget to click on "Save" to activate your connector.
+    <div id="config" style="display: none;">
+        Which text would you like to post to the channel? <input id="msg" type="text"><br>
+        In which time interval should your server be messaged (in minutes)? <input id="interval" type="number">
     </div>
 
     <script>
@@ -44,10 +43,12 @@
             });
         }
 
+
         //Function to configure the actual connector
         function configure() {
+            microsoftTeams.getContext(c => { console.log(c) });
             document.getElementById("login").style.display = "none";
-            document.getElementById("success").style.display = "block";
+            document.getElementById("config").style.display = "block";
             //Store some settings in the configuration of the connector
             microsoftTeams.settings.setSettings({
                 //Important when referencing your connector from somewhere else within Teams
@@ -60,18 +61,47 @@
 
             //By calling getSettings() you get (among other information) the webhook URL that you will use to POST messages into the channel
             microsoftTeams.settings.getSettings(s => {
-                document.getElementById("url").innerText = s.webhookUrl;
-                console.log(s);
-            });
-
-            //This command enables the "Save" button (disabled by default)
-            microsoftTeams.settings.setValidityState(true);
-
-            //Specify what happens when the user clicks on "Save"
-            microsoftTeams.settings.registerOnSaveHandler((saveEvent) => {
+                microsoftTeams.settings.registerOnSaveHandler((saveEvent) => {
+                    saveConfig(s.webhookUrl).then(() => {
+                        saveEvent.notifySuccess();
+                    }).catch(e => {
+                        console.error("Something went wrong!");
+                    })
+                });
                 //You have to notify Teams that the saving process was successful, otherwise the save operation will time out and display an error
-                saveEvent.notifySuccess();
+                microsoftTeams.settings.setValidityState(true);
             });
+        }
+
+        async function saveConfig(webhook) {
+            let msg = document.getElementById("msg").value;
+            let interval = document.getElementById("interval").value;
+
+            return new Promise((resolve, reject) => {
+                microsoftTeams.getContext(c => {
+                    fetch("/configDetails", {
+                        "method": "POST",
+                        "headers": {
+                            "Content-Type": "application/json"
+                        },
+                        "body": JSON.stringify({
+                            message: msg,
+                            interval: interval,
+                            team: c.groupId,
+                            tenant: c.tId,
+                            channel: c.channelId,
+                            configuredBy: c.userObjectId,
+                            webhook: webhook
+                        })
+                    }).then(resp => {
+                        if (resp.status === 200) resolve();
+                        else reject();
+                    })
+                })
+
+            })
+
+
         }
     </script>
 </body>

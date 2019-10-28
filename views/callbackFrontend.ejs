@@ -10,12 +10,16 @@
 
             //notifySuccess() closes the popup window and passes the specified information to the configuration page
             //Usually you would pass the tokens in here, but as we don't want to expose user tokens to the client and we only need a proof that the user is who we claims (authentication), we leave these fields empty
+            <% if(successfulAuth) { %>
             microsoftTeams.authentication.notifySuccess({
             idToken: "N/A",
             accessToken: "N/A",
             tokenType: "N/A",
             expiresIn: "N/A"
-        })    
+        })
+        <% } else { %>   
+            microsoftTeams.authentication.notifyFailure("User could not be verified");
+        <% } %>
         </script>
     </body>
 </html>
